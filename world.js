@@ -1,8 +1,7 @@
 'use strict';
-
-const world_loader = require(`./world_loader`);
 const HashMap = require(`./utils/hashmap`);
 const ArrayList = require(`./utils/arraylist`);
+const world_loader = require(`./world_loader`);
 
 class World {
     constructor(name) {

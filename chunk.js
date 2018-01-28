@@ -1,5 +1,4 @@
 'use strict';
-
 const compression = require(`./utils/compression`);
 
 class Chunk {

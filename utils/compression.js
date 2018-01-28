@@ -1,5 +1,4 @@
 'use strict';
-
 const ArrayList = require(`./arraylist`);
 
 function compress(rawData) {
