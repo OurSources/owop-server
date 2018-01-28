@@ -1,4 +1,4 @@
 /node_modules
 package-lock.json
 config/config.yaml
-config/config.yaml
+config/key.json
