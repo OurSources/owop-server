@@ -1,0 +1,8 @@
+{
+    "ClientHello": 100,
+    "Login": 101,
+    "ServerHello": 200,
+    "LoginOK": 201,
+    "LoginFailed": 202,
+    "OutdatedClient": 255
+}

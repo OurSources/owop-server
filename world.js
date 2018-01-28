@@ -1,3 +1,5 @@
+'use strict';
+
 const world_loader = require(`./world_loader`);
 const HashMap = require(`./utils/hashmap`);
 const ArrayList = require(`./utils/arraylist`);
@@ -24,7 +26,16 @@ class World {
     }
 
     getChunkKey(x, y) {
-        return (x << 32) + y;
+        var res = `00000000`;
+        res[0] = (x >> 24) & 0xFF;
+        res[1] = (x >> 16) & 0xFF;
+        res[2] = (x >> 8) & 0xFF;
+        res[3] = x & 0xFF;
+        res[4] = (y >> 24) & 0xFF;
+        res[5] = (y >> 16) & 0xFF;
+        res[6] = (y >> 8) & 0xFF;
+        res[7] = y & 0xFF;
+        return res;
     }
 
     getChunk(x, y, callback) {
@@ -47,11 +58,7 @@ class World {
             this._pixelUpdates.add({
                 x: x,
                 y: y,
-                color: {
-                    r: color.r,
-                    g: color.g,
-                    b: color.b
-                }
+                color: color
             });
         });
     }
@@ -92,10 +99,8 @@ class World {
             message.writeUInt32LE(player.id, offset + 16 * i);
             message.writeInt32LE(player.x, offset + 16 * i + 4);
             message.writeInt32LE(player.y, offset + 16 * i + 8);
-            message.writeUInt8(player.color.r, offset + 16 * i + 12);
-            message.writeUInt8(player.color.g, offset + 16 * i + 13);
-            message.writeUInt8(player.color.b, offset + 16 * i + 14);
-            message.writeUInt8(player.tool, offset + 16 * i + 15);
+            message.writeUInt16LE(player.color, offset + 16 * i + 12);
+            message.writeUInt8(player.tool, offset + 16 * i + 14);
             i++;
         });
 
@@ -105,9 +110,7 @@ class World {
         this._pixelUpdates.forEach(pixel => {
             message.writeInt32LE(pixel.x, offset + 11 * i);
             message.writeInt32LE(pixel.y, offset + 11 * i + 4);
-            message.writeUInt8(pixel.color.r, offset + 11 * i + 8);
-            message.writeUInt8(pixel.color.g, offset + 11 * i + 9);
-            message.writeUInt8(pixel.color.b, offset + 11 * i + 10);
+            message.writeUInt16LE(pixel.color, offset + 11 * i + 8);
             i++;
         });
 
@@ -115,7 +118,7 @@ class World {
         offset += 1 + 11 * i;
         i = 0;
         this._playerDisconnects.forEach(playerID => {
-            message.writeUInt32LE(playerID);
+            message.writeUInt32LE(playerID, offset + i * 4);
             i++;
         });
 

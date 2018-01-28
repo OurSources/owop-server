@@ -1,26 +1,34 @@
+'use strict';
+
+const compression = require(`./utils/compression`);
+
 class Chunk {
-    constructor(data, x, y) {
+    constructor(data, cache) {
         this._data = data;
         this._changed = false;
+        this._cache = cache;
+    }
+
+    putPixel(x, y, color) {
+        this._data.writeUInt16(color, ((y << 8) + x) << 1);
+        this._changed = true;
+    }
+
+    getPixel(x, y) {
+        return this._data.readUInt16(color, ((y << 8) + x) << 1);
     }
 
     get data() {
         return this._data;
     }
 
-    putPixel(x, y, color) {
-        /*pixels[((y << 8) + x) << 1] = color;
-        pixels[(((y << 8) + x) << 1) + 1] = color >> 8;*/
-        this._changed = true;
-    }
+    get cache() {
+        if (this._changed) {
+            this._changed = false;
+            this._cache = compression.compress(this.data);
+        }
 
-    getPixel(x, y) {
-        /*return pixels[((y << 8) + x) << 1]
-            | pixels[(((y << 8) + x) << 1) + 1] << 8;*/
-    }
-
-    get changed() {
-        
+        return this._cache;
     }
 }
 

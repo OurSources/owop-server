@@ -1,3 +1,5 @@
+'use strict';
+
 class HashMap {
     constructor() {
         this._size = 0;

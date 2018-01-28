@@ -1,3 +1,5 @@
+'use strict';
+
 class ArrayList {
     constructor() {
         this._data = [];
@@ -16,6 +18,10 @@ class ArrayList {
         if (index >= 0) {
             this._data.splice(index, 1);
         }
+    }
+
+    get(index) {
+        return this._data[index];
     }
 
     clear() {

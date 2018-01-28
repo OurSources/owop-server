@@ -1,16 +1,16 @@
+'use strict';
+
 class Player {
-    constructor(id, world, socket) {
-        this._id = id;
-        this._world = world;
+    constructor(socket) {
         this._socket = socket;
-        this._x = 0;
-        this._y = 0;
-        this._color = 0;
-        this._tool = 0;
     }
 
     send(message) {
         this._socket.send(message);
+    }
+
+    kick() {
+        this._socket.close();
     }
 
     update(x, y, tool, color) {
