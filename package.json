@@ -1,0 +1,24 @@
+{
+	"name": "owop-server",
+	"version": "1.0.0",
+	"description": "The OWOP server written in Node",
+	"main": "server.js",
+	"dependencies": {
+		"ws": "^4.0.0"
+	},
+	"devDependencies": {},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node server.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/OurSources/owop-server.git"
+	},
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/OurSources/owop-server/issues"
+	},
+	"homepage": "https://github.com/OurSources/owop-server#readme"
+}
