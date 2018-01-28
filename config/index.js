@@ -1,6 +1,5 @@
 'use strict';
-const yaml = require(`../utils/yaml.js`);
 
-module.exports = yaml.readYAML(`config/config.yaml`);
+module.exports = require(`./config.json`);
 
 console.log(`Loaded config`);
