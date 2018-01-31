@@ -3,27 +3,34 @@ const ProtoDef = require(`protodef`).ProtoDef;
 const protoData = require(`./protocol.json`);
 
 const States = {
-	0: "LOGIN",
-	1: "PLAY"
+	LOGIN: 0,
+	PLAY: 1
 };
-
-const Protocol = {
-	LOGIN: {
-		toClient: (new ProtoDef()).addProtocol(protoData, ["login", "toClient"]),
-		toServer: (new ProtoDef()).addProtocol(protoData, ["login", "toServer"])
-	},
-	PLAY: {
-		toClient: (new ProtoDef()).addProtocol(protoData, ["play", "toClient"]),
-		toServer: (new ProtoDef()).addProtocol(protoData, ["play", "toServer"])
-	}
-};
-
-function serialize(player, packet) {
-	return Protocol[States[player.state]].toClient.createPacketBuffer("packet", packet);
+for (let i in States) {
+	States[States[i]] = i;
 }
 
-function deserialize(player, buffer) {
-	return Protocol[States[player.state]].toServer.parsePacketBuffer("packet", buffer);
+// FIXME: This is so ugly
+const Protocol = {};
+Protocol[States.LOGIN] = {
+	toClient: new ProtoDef(),
+	toServer: new ProtoDef()
+};
+Protocol[States.LOGIN].toClient.addProtocol(protoData, ["login", "toClient"]);
+Protocol[States.LOGIN].toServer.addProtocol(protoData, ["login", "toServer"]);
+Protocol[States.PLAY] = {
+	toClient: new ProtoDef(),
+	toServer: new ProtoDef()
+};
+Protocol[States.PLAY].toClient.addProtocol(protoData, ["play", "toClient"]);
+Protocol[States.PLAY].toServer.addProtocol(protoData, ["play", "toServer"]);
+
+function serialize(packet, state) {
+	return Protocol[state].toClient.createPacketBuffer("packet", packet);
+}
+
+function deserialize(buffer, state) {
+	return Protocol[state].toServer.parsePacketBuffer("packet", buffer).data;
 }
 
 function isWorldNameValid(worldName) {
@@ -47,5 +54,6 @@ function isWorldNameValid(worldName) {
 
 module.exports = {
 	serialize: serialize,
-	deserialize: deserialize
+	deserialize: deserialize,
+	States: States
 };

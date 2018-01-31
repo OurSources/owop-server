@@ -1,6 +1,12 @@
 {
 	"types": {
-		"string": "native"
+		"pstring": "native",
+		"string": [
+			"pstring",
+			{
+				"countType": "varint"
+			}
+		]
 	},
 	"login": {
 		"toClient": {
