@@ -17,7 +17,7 @@ server.on(`connection`, (ws, data) => {
 		if (typeof (rawPacket) == `string`) {
 			ws.kick(); // we don't use string packets
 		}
-		protocol.onPacket(rawPacket, players.get(socketAddress), socketAddress);
+		console.log(protocol.deserialize(players.get(socketAddress), rawPacket));
 	});
 	console.log(`Connected ${ws._socket.remoteAddress}:${ws._socket.remotePort}`);
 	// ws.send(new Uint8Array([5, 3]).buffer); // no captcha

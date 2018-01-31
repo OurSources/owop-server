@@ -5,6 +5,7 @@
 	"main": "server.js",
 	"dependencies": {
 		"firebase-admin": "^5.8.1",
+		"protodef": "^1.6.4",
 		"ws": "^4.0.0"
 	},
 	"devDependencies": {},
