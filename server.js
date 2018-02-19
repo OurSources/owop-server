@@ -2,93 +2,50 @@
 const WebSocket = require(`ws`);
 const HashMap = require(`./utils/hashmap`);
 const World = require(`./world`);
+const WorldManager = require(`./world_manager`);
+const IdManager = require(`./id_manager`);
 const Player = require(`./player`);
 const auth = require(`./auth`);
-const Proto = require(`./protocol`);
+const Proto = require(`./protocol`).Protocol;
 
 var server = new WebSocket.Server({ port: 9000 }, () => console.log(`Server started!`));
-var worlds = new HashMap();
-var players = new HashMap();
-var totalOnline = 0;
 
-let clients = [];
+var idMgr = new IdManager(); /* Per world or global? */
+var worldMgr = new WorldManager();
+var proto = new Proto(worldMgr, null);
+
+let clients = new Set();
 
 function broadcast(message) {
-	for (let i in clients) {
-		clients[i].send(message);
-	}
+	clients.forEach(c => c.send(message));
 }
 
 class Client {
-	constructor(socket) {
+	constructor(socket, id) {
+		this.id = id;
 		this.socket = socket;
 
-		this.protoState = Proto.States.LOGIN;
-
-		this.socket.on("message", (data) => {
-			if (typeof data == "string") {
-				this.close();
-			}
-
-			let packet;
-			try {
-				packet = Proto.deserialize(data, this.protoState);
-			} catch(e) {
-				console.log("invalid packet!", e);
-				return;
-			}
-
-			console.log(packet);
-
-			switch(this.protoState) {
-				case Proto.States.LOGIN:
-					switch(packet.name) {
-						case "loginStart":
-							console.log("BOB ;( " + packet.params.bob);
-							break;
-					}
-					break;
-				case Proto.States.PLAY:
-					switch(packet.name) {
-
-					}
-					break;
-			}
-		});
-
-		this.id = clients.push(this) - 1;
+		this.protoState = null;
 
 		console.log("connection start: " + this.id);
 	}
 
 	close() {
 		this.socket.close();
-		delete clients[this.id];
 	}
 }
 
 server.on(`connection`, (socket, data) => {
-	let client = new Client(socket);
+	let client = new Client(socket, idMgr.newId());
+	
+	clients.add(client);
+	proto.onConnection(client);
+	socket.onclose = () => {
+		clients.delete(client);
+		proto.onDisconnection(client);
+		idMgr.freeId(client.id);
+	};
 });
 
-setInterval(() => {
-	worlds.forEach((key, world) => world.sendUpdates());
-}, 50);
 
-function getWorld(worldName) {
-	if (worlds.contains(worldName)) {
-		return worlds.get(worldName);
-	} else {
-		var world = new World(worldName);
-		worlds.add(worldName, world);
-		return world;
-	}
-}
-
-function unloadWorld(worldName) {
-	if (worlds.contains(worldName)) {
-		worlds.remove(worldName);
-	}
-}
-
-module.exports = { getWorld, unloadWorld };
+//module.exports = { getWorld, unloadWorld };

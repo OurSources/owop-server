@@ -4,48 +4,48 @@ const ArrayList = require(`./utils/arraylist`);
 const world_loader = require(`./world_loader`);
 
 class World {
-	constructor(name) {
+	constructor(name, requestUpdate) {
 		this._name = name;
 		this._online = 0;
-		this._playerID = 1;
-		this._players = new HashMap();
-		this._playerUpdates = new ArrayList();
+		this._players = new Map();
+		this._playerUpdates = new Set();
+		/* Should a map be used here? Would prevent sending multiple updates for a single pixel */
 		this._pixelUpdates = new ArrayList();
-		this._playerDisconnects = new ArrayList();
-		this._chunks = [];
+		this._playerDisconnects = new Set();
+		this._chunks = new Map();
+		
+		this.requestUpdate = requestUpdate;
+	}
+	
+	destroy() {
+		/* Save chunks here */
 	}
 
 	get online() {
 		return this._players.size;
 	}
 
-	getNextID() {
+	/*getNextID() {
 		this._playerID++;
 		return this._playerID - 1;
-	}
+	}*/
 
 	getChunkKey(x, y) {
-		var res = `00000000`;
-		res[0] = (x >> 24) & 0xFF;
-		res[1] = (x >> 16) & 0xFF;
-		res[2] = (x >> 8) & 0xFF;
-		res[3] = x & 0xFF;
-		res[4] = (y >> 24) & 0xFF;
-		res[5] = (y >> 16) & 0xFF;
-		res[6] = (y >> 8) & 0xFF;
-		res[7] = y & 0xFF;
-		return res;
+		/* If the chunk position is signed 24-bit (or less), it actually fits in a js number */
+		/* >>> 0 'casts' to unsigned, * 0x1000000 shifts the num 24 bits */
+		return ((x >>> 0 & 0xFFFFFF) * 0x1000000 + (y >>> 0 & 0xFFFFFF));
 	}
 
 	getChunk(x, y, callback) {
 		var chunkKey = this.getChunkKey(x, y);
-		if (!this._chunks[chunkKey]) {
+		var chunk = this._chunks.get(chunkKey);
+		if (!chunk) {
 			world_loader.loadChunk(this, x, y, (chunk) => {
-				this._chunks[chunkKey] = chunk;
+				this._chunks.set(chunkKey, chunk);
 				callback(chunk);
 			});
 		} else {
-			callback(this._chunks[chunkKey]);
+			callback(chunk);
 		}
 	}
 
@@ -67,12 +67,12 @@ class World {
 
 	playerJoined(player) {
 		player.send(`Joined world ${this._name}. Your ID: ${player.id}`);
-		this._players.add(player.id, player);
+		this._players.set(player.id, player);
 	}
 
 	playerLeft(player) {
 		this._playerDisconnects.add(player.id);
-		this._players.remove(player.id);
+		this._players.delete(player.id);
 	}
 
 	broadcast(message) {
@@ -85,7 +85,7 @@ class World {
 		var disconnects = this._playerDisconnects.size;
 
 		if (players + pixels + disconnects < 1) {
-			return;
+			return false;
 		}
 
 		var message = Buffer.allocUnsafe(5 + players * 16 + pixels * 11 + disconnects * 4);
