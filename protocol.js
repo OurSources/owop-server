@@ -1,6 +1,6 @@
 'use strict';
 const ProtoDef = require(`protodef`).ProtoDef;
-const protoData = require(`./protocol.json`);
+const protoData = require(`./owop-protocol/protocol.json`);
 
 const States = {
 	LOGIN: 0,
