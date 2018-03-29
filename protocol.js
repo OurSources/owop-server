@@ -50,8 +50,9 @@ class NetworkState {
 	}
 	
 	onMessage(client, msg) {
+		msg = msg.data;
 		/* If not binary or length is 0 */
-		if (!msg.data.byteLength) {
+		if (!msg.byteLength) {
 			client.close();
 			return;
 		}
@@ -93,6 +94,12 @@ class LoginState extends NetworkState {
 		switch(packet.name) {
 			case "loginStart":
 				console.log("BOB ;( " + packet.params.bob);
+				client.socket.send(this.serialize({
+					name: 'loginResponse',
+					params: {
+						bob: `(G) ${packet.params.bob}`
+					}
+				}));
 				break;
 		}
 	}

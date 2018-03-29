@@ -36,6 +36,8 @@ class Client {
 }
 
 server.on(`connection`, (socket, data) => {
+	socket.onerror = () => {};
+	
 	let client = new Client(socket, idMgr.newId());
 	
 	clients.add(client);
@@ -47,5 +49,8 @@ server.on(`connection`, (socket, data) => {
 	};
 });
 
+server.on(`error`, () => {
+	
+});
 
 //module.exports = { getWorld, unloadWorld };
