@@ -4,13 +4,24 @@ const captcha = new recaptcha(config.captcha);
 
 import { States } from "./protocol";
 
-import { protocol } from "./server";
+import { protocol, worldManager } from "./server";
 
-export class Client {
+import firebase from "firebase-admin";
+
+import { User, Guest } from "./user";
+import { Player, Position } from "./player";
+
+export default class Client {
 	constructor(socket) {
 		this.socket = socket;
 		
+		this.world = "main";
+		this.position = new Position(0, 0);
+		this.user = null;
+		
 		this.state = States.LOGIN;
+		
+		//this.player = new Player();
 		
 		this.socket.on("message", function(message) {
 			this.messageHandler(message);
@@ -18,7 +29,6 @@ export class Client {
 	}
 	
 	messageHandler(message) {
-		console.log(message);
 		let packet = protocol.states[this.state].deserialize(message);
 		console.log(packet);
 		
@@ -31,28 +41,27 @@ export class Client {
 								name: "loginResponse",
 								params: {
 									statusCode: 0,
-									statusMessage: "hello world"
+									statusMessage: ""
 								}
 							});
 							this.state = States.PLAY;
-							this.sendPacket({
-								name: "worldData",
-								params: {
-									worldName: "main",
-									cursors: [
-										{
-											userId: "bob123",
-											localId: 123,
-											pos: {x: 5, y: -5}
-										}
-									]
-								}
-							});
+							this.joinWorld(packet.params.worldName);
 						}.bind(this)).catch(function() {
-							
+							// TODO
 						}.bind(this));
 					} else {
-						// TODO
+						firebase.auth().verifyIdToken(packet.params.token).then(function(decodedToken) {
+							console.log(decodedToken);
+							this.sendPacket({
+								name: "loginResponse",
+								params: {
+									statusCode: 0,
+									statusMessage: ""
+								}
+							});
+						}.bind(this)).catch(function(error) {
+							// TODO
+						}.bind(this));
 					}
 					break;
 			}
@@ -63,6 +72,13 @@ export class Client {
 					break;
 			}
 		}
+	}
+	
+	joinWorld(worldName) {
+		this.world = worldName;
+		let world = worldManager.getWorld(worldName);
+		
+		world.clientJoin(this);
 	}
 	
 	sendPacket(packet) {

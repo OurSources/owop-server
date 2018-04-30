@@ -1,11 +1,11 @@
 'use strict';
 
-class IdManager {
+export default class IdManager {
 	constructor() {
 		this.currentId = 0;
 		this.freeIds = [];
 		this.freeIds.sortedPush = function(item) {
-			var index = 0;
+			let index = 0;
 			if (item >= this[this.length - 1]) {
 				return this.push(item) - 1;
 			}
@@ -32,8 +32,8 @@ class IdManager {
 	}
 	
 	shrink() {
-		var len = this.freeIds.length - 1;
-		var didSomething = false;
+		let len = this.freeIds.length - 1;
+		let didSomething = false;
 		for (; len >= 0; len--) {
 			if (this.freeIds[len] === this.currentId) {
 				--this.currentId;
@@ -47,5 +47,3 @@ class IdManager {
 		}
 	}
 }
-
-module.exports = IdManager;

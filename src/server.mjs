@@ -1,21 +1,18 @@
 'use strict';
 import WebSocket from "ws";
-import HashMap from "./utils/hashmap";
-import World from "./world";
-import WorldManager from "./world_manager";
 import IdManager from "./id_manager";
-import Player from "./player";
-import auth from "./auth";
+import "./auth";
+import WorldManager from "./world_manager";
 import { Protocol } from "./protocol";
 
-import { Client } from "./client";
+import Client from "./client";
 
 let server = new WebSocket.Server({ port: 9000 }, () => console.log("Server started!"));
 
 export const protocol = new Protocol();
+export const worldManager = new WorldManager();
 
 let idMgr = new IdManager(); /* Per world or global? */
-let worldMgr = new WorldManager();
 
 let clients = new Set();
 
@@ -30,6 +27,7 @@ server.on("connection", (socket, data) => {
 	socket.onclose = () => {
 		clients.delete(client);
 	};
+	socket.on("error", function() {});
 });
 
 server.on("error", () => {
