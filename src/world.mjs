@@ -1,7 +1,7 @@
 'use strict';
 import HashMap from "./utils/hashmap";
 import ArrayList from "./utils/arraylist";
-import world_loader from "./world_loader";
+import WorldLoader from "./world_loader";
 
 import IdManager from "./id_manager";
 
@@ -15,6 +15,7 @@ export default class World {
 		this.playerUpdates = new Set();
 		
 		this.idManager = new IdManager();
+		this.worldLoader = new WorldLoader(worldName);
 		
 		/* Should a map be used here? Would prevent sending multiple updates for a single pixel */
 		this.pixelUpdates = new ArrayList();
@@ -43,28 +44,26 @@ export default class World {
 		return ((x >>> 0 & 0xFFFFFF) * 0x1000000 + (y >>> 0 & 0xFFFFFF));
 	}
 
-	getChunk(x, y, callback) {
+	async getChunk(x, y) {
 		var chunkKey = this.getChunkKey(x, y);
 		var chunk = this.chunks.get(chunkKey);
 		if (!chunk) {
-			world_loader.loadChunk(this, x, y, (chunk) => {
-				this.chunks.set(chunkKey, chunk);
-				callback(chunk);
-			});
-		} else {
-			callback(chunk);
+			chunk = await this.worldLoader.loadChunk(x, y);
+			this.chunks.set(chunkKey, chunk);
 		}
+		return chunk;
 	}
 
-	putPixel(x, y, color) {
-		this.getChunk(x >> 8, y >> 8, (chunk) => {
-			if (chunk.getPixel(x, y) == color) return;
-			chunk.putPixel(x, y, color);
-			this.pixelUpdates.add({
-				x: x,
-				y: y,
-				color: color
-			});
+	async putPixel(x, y, color) {
+		const chunk = await this.getChunk(x >> 8, y >> 8);
+		if (!chunk || chunk.getPixel(x, y) == color) {
+			return;
+		}
+		chunk.putPixel(x, y, color);
+		this.pixelUpdates.add({
+			x: x,
+			y: y,
+			color: color
 		});
 	}
 

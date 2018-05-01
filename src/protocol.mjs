@@ -50,7 +50,7 @@ export class Protocol {
 			[States.PLAY]: new PlayState()
 		};
 	}
-};
+}
 
 function isWorldNameValid(worldName) {
 	/* Validate world name, allowed chars are a..z, 0..9, '_' and '.'

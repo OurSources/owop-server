@@ -11,6 +11,9 @@ export default class WorldManager {
 	
 	destroy() {
 		clearInterval(this.updateLoop);
+		this.worlds.forEach(world => {
+			world.destroy();
+		});
 	}
 	
 	requestWorldUpdate(world) {
