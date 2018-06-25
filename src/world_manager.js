@@ -1,25 +1,14 @@
-'use strict';
+"use strict";
 
-import World from "./world";
+const World = require("./world");
 
-export default class WorldManager {
+class WorldManager {
 	constructor() {
 		this.worlds = new Map();
 		this.worldsToUpdate = new Set();
-		this.updateLoop = setInterval(() => this.updateWorlds(), 50);
+		this.updateLoop = setInterval(() => this.updateWorlds(), 1000 / 20);
 	}
-	
-	destroy() {
-		clearInterval(this.updateLoop);
-		this.worlds.forEach(world => {
-			world.destroy();
-		});
-	}
-	
-	requestWorldUpdate(world) {
-		this.worldsToUpdate.add(world);
-	}
-	
+
 	updateWorlds() {
 		this.worldsToUpdate.forEach((world) => {
 			if (!world.sendUpdates()) { /* Returns false if there's nothing remaining to update */
@@ -27,7 +16,11 @@ export default class WorldManager {
 			}
 		});
 	}
-	
+
+	requestWorldUpdate(world) {
+		this.worldsToUpdate.add(world);
+	}
+
 	getWorld(worldName) {
 		let world = this.worlds.get(worldName);
 		if (world) {
@@ -38,7 +31,7 @@ export default class WorldManager {
 		this.worlds.set(worldName, world);
 		return world;
 	}
-	
+
 	unloadWorld(worldName) {
 		let world = this.worlds.get(worldName);
 		if (world) {
@@ -46,4 +39,13 @@ export default class WorldManager {
 			this.worlds.delete(worldName);
 		}
 	}
+
+	destroy() {
+		clearInterval(this.updateLoop);
+		this.worlds.forEach(world => {
+			world.destroy();
+		});
+	}
 }
+
+module.exports = WorldManager;

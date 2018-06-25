@@ -1,5 +1,6 @@
-'use strict';
-const compression = require(`./utils/compression`);
+"use strict";
+
+const compression = require("./utils/compression");
 
 class Chunk {
 	constructor(data, cache) {

@@ -1,8 +1,9 @@
-'use strict';
-import ProtoDef from "protodef";
-import protoData from "../owop-protocol/protocol.json";
+"use strict";
 
-export const States = {
+const ProtoDef = require("protodef");
+const protoData = require("../owop-protocol/protocol.json");
+
+const States = {
 	LOGIN: 0,
 	PLAY: 1
 };
@@ -15,7 +16,7 @@ class NetworkState {
 		this.toClient = new ProtoDef.ProtoDef();
 		this.toServer = new ProtoDef.ProtoDef();
 	}
-	
+
 	deserialize(msg) {
 		return this.toServer.parsePacketBuffer("packet", msg).data;
 	}
@@ -28,7 +29,7 @@ class NetworkState {
 class LoginState extends NetworkState {
 	constructor() {
 		super();
-		
+
 		this.toClient.addProtocol(protoData, ["login", "toClient"]);
 		this.toServer.addProtocol(protoData, ["login", "toServer"]);
 	}
@@ -37,13 +38,13 @@ class LoginState extends NetworkState {
 class PlayState extends NetworkState {
 	constructor() {
 		super();
-		
+
 		this.toClient.addProtocol(protoData, ["play", "toClient"]);
 		this.toServer.addProtocol(protoData, ["play", "toServer"]);
 	}
 }
 
-export class Protocol {
+class Protocol {
 	constructor() {
 		this.states = {
 			[States.LOGIN]: new LoginState(),
@@ -68,3 +69,8 @@ function isWorldNameValid(worldName) {
 	// TODO: implement this
 	return true;
 }
+
+module.exports = {
+	States: States,
+	Protocol: Protocol
+};

@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-export default class IdManager {
+class IdManager {
 	constructor() {
 		this.currentId = 0;
 		this.freeIds = [];
@@ -14,14 +14,14 @@ export default class IdManager {
 			return index;
 		};
 	}
-	
+
 	newId() {
 		if (this.freeIds.length !== 0) {
 			return this.freeIds.shift();
 		}
 		return ++this.currentId;
 	}
-	
+
 	freeId(id) { /* Only free ids returned by newId(), once. */
 		if (id === this.currentId) {
 			--this.currentId;
@@ -30,7 +30,7 @@ export default class IdManager {
 		}
 		this.shrink();
 	}
-	
+
 	shrink() {
 		let len = this.freeIds.length - 1;
 		let didSomething = false;
@@ -47,3 +47,5 @@ export default class IdManager {
 		}
 	}
 }
+
+module.exports = IdManager;

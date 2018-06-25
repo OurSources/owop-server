@@ -1,30 +1,31 @@
-'use strict';
-import HashMap from "./utils/hashmap";
-import ArrayList from "./utils/arraylist";
-import WorldLoader from "./world_loader";
+"use strict";
 
-import IdManager from "./id_manager";
+const HashMap = require("./utils/hashmap");
+const ArrayList = require("./utils/arraylist");
+const WorldLoader = require("./world_loader");
 
-import { protocol } from "./server";
+const IdManager = require("./id_manager");
 
-export default class World {
+const { protocol } = require("./main");
+
+class World {
 	constructor(worldName, requestUpdate) {
 		console.log("new world");
 		this.name = worldName;
 		this.clients = new Map();
 		this.playerUpdates = new Set();
-		
+
 		this.idManager = new IdManager();
 		this.worldLoader = new WorldLoader(worldName);
-		
+
 		/* Should a map be used here? Would prevent sending multiple updates for a single pixel */
 		this.pixelUpdates = new ArrayList();
 		this.playerDisconnects = new Set();
 		this.chunks = new Map();
-		
+
 		this.requestUpdate = requestUpdate;
 	}
-	
+
 	destroy() {
 		/* Save chunks here */
 	}
@@ -86,7 +87,7 @@ export default class World {
 			}
 		});
 		//player.send(`Joined world ${this.name}. Your ID: ${client.id}`);
-		this.clients.set(client.id, player);
+		this.clients.set(client.id, client);
 	}
 
 	clientLeave(player) {
@@ -146,3 +147,5 @@ export default class World {
 		this.clients.forEach((key, player) => player.send(message));
 	}
 }
+
+module.exports = World;

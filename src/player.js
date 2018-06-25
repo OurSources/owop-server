@@ -1,13 +1,13 @@
-'use strict';
+"use strict";
 
-export class Position {
+class Position {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
 	}
 }
 
-export class Player {
+class Player {
 	constructor() {
 		this.pos = new Position(0, 0);
 	}
@@ -39,3 +39,8 @@ export class Player {
 		return `[Player world:'${this._world.name}' id:${this._id}]`;
 	}
 }
+
+module.exports = {
+	Position: Position,
+	Player: Player
+};

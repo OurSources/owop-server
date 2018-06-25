@@ -1,8 +1,9 @@
-'use strict';
-import CONFIG from "./config";
-import firebase from "firebase-admin";
+"use strict";
 
-import key from "./config/key.json";
+const CONFIG = require("./config/config.json");
+const firebase = require("firebase-admin");
+
+const key = require("./config/key.json");
 
 firebase.initializeApp({
 	credential: firebase.credential.cert(key),

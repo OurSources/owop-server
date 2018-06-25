@@ -2,7 +2,7 @@
 	"name": "owop-server",
 	"version": "1.0.0",
 	"description": "The OWOP server written in Node",
-	"main": "src/server.mjs",
+	"main": "src/main.js",
 	"dependencies": {
 		"firebase-admin": "^5.8.1",
 		"fs-extra": "^5.0.0",
@@ -12,7 +12,7 @@
 	},
 	"devDependencies": {},
 	"scripts": {
-		"start": "node --experimental-modules src/server.mjs"
+		"start": "node src/main.js"
 	},
 	"repository": {
 		"type": "git",
