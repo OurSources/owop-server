@@ -1,6 +1,8 @@
 "use strict";
 
+const fs = require("fs");
 const WebSocket = require("ws");
+const http = require("http");
 const IdManager = require("./id_manager");
 
 require("./auth");
@@ -18,6 +20,7 @@ class Server {
 		this.worldManager = new WorldManager();
 		this.idManager = new IdManager(); /* Per world or global? */
 
+		// WebSocket Server
 		this.server = new WebSocket.Server({
 			port: options.port
 		}, () => {
@@ -37,6 +40,33 @@ class Server {
 		this.server.on("error", () => {
 
 		});
+
+
+		// HTTP Chunk Server
+		const chunksPath = "worlds";
+
+		this.chunkServer = http.createServer(function(req, res) {
+			let url = req.url.split("/");
+			let world = url[1];
+			let zoom = parseInt(url[2]);
+			let x = parseInt(url[3]);
+			let y = parseInt(url[4]);
+
+			let exists = fs.existsSync(chunksPath + "/" + world + "/" + zoom + "/" + x + "." + y + ".png");
+
+			if (exists) {
+				res.end(fs.readFileSync(chunksPath + "/" + world + "/" + zoom + "/" + x + "." + y + ".png"), "binary");
+			} else {
+				res.writeHead(404, {});
+				res.end();
+			}
+		});
+
+		this.chunkServer.on("clientError", function(err, socket) {
+			socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
+		});
+
+		this.chunkServer.listen(options.chunkPort);
 	}
 
 	broadcast(message) {

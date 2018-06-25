@@ -18,6 +18,7 @@ class Client {
 		this.worldManager = worldManager;
 
 		this.world = "main";
+		this.id = -1;
 		this.position = new Position(0, 0);
 		this.user = null;
 
@@ -48,6 +49,19 @@ class Client {
 							});
 							this.state = States.PLAY;
 							this.joinWorld(packet.params.worldName);
+							this.sendPacket({
+								name: "clientData",
+								params: {
+									userId: "",
+									localId: this.id,
+									pos: {
+										x: 0,
+										y: 0
+									},
+									username: "",
+									xp: 0
+								}
+							});
 						}).catch((errorCodes) => {
 							// TODO
 							console.log("Captcha failed", captcha.translateErrors(errorCodes));
@@ -81,7 +95,7 @@ class Client {
 		let world = this.worldManager.getWorld(worldName);
 		this.world = world;
 
-		world.clientJoin(this);
+		this.id = world.clientJoin(this);
 	}
 
 	sendPacket(packet) {

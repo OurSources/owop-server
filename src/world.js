@@ -87,7 +87,10 @@ class World {
 			}
 		});
 		//player.send(`Joined world ${this.name}. Your ID: ${client.id}`);
-		this.clients.set(client.id, client);
+		let id = this.idManager.newId();
+		this.clients.set(id, client);
+
+		return id;
 	}
 
 	clientLeave(player) {
