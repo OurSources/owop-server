@@ -1,10 +1,10 @@
 "use strict";
 
-const ReCaptcha = require("recaptcha2");
 const config = require("./config/config.json");
-const captcha = new ReCaptcha(config.captcha);
+const ReCaptcha = require("recaptcha2");
+const recaptcha = new ReCaptcha(config.captcha);
 
-const { States } = require("./protocol");
+const { States, protocol } = require("./protocol");
 
 const firebase = require("firebase-admin");
 
@@ -12,13 +12,14 @@ const { User, Guest } = require("./user");
 const { Player, Position } = require("./player");
 
 class Client {
-	constructor(socket, protocol, worldManager) {
+	constructor(socket, worldManager) {
 		this.socket = socket;
-		this.protocol = protocol;
 		this.worldManager = worldManager;
 
-		this.world = "main";
-		this.id = -1;
+		this.userId = null;
+
+		this.world = null;
+		this.localId = null;
 		this.position = new Position(0, 0);
 		this.user = null;
 
@@ -29,17 +30,21 @@ class Client {
 		this.socket.on("message", (message) => {
 			this.messageHandler(message);
 		});
+		this.socket.on("close", () => {
+			this.close();
+		});
 	}
 
 	messageHandler(message) {
-		let packet = this.protocol.states[this.state].deserialize(message);
+		let packet = protocol.states[this.state].deserialize(message);
 		console.log(packet);
 
 		if (this.state == States.LOGIN) {
 			switch(packet.name) {
 				case "login":
 					if (packet.params.guest) {
-						captcha.validate(packet.params.token).then(() => {
+						recaptcha.validate(packet.params.token).then(() => {
+							this.userId = "guest";
 							this.sendPacket({
 								name: "loginResponse",
 								params: {
@@ -64,7 +69,7 @@ class Client {
 							});
 						}).catch((errorCodes) => {
 							// TODO
-							console.log("Captcha failed", captcha.translateErrors(errorCodes));
+							console.log("Captcha failed", recaptcha.translateErrors(errorCodes));
 						});
 					} else {
 						firebase.auth().verifyIdToken(packet.params.token).then((decodedToken) => {
@@ -98,8 +103,14 @@ class Client {
 		this.id = world.clientJoin(this);
 	}
 
+	close() {
+		if (this.world) {
+			this.world.clientLeave(this);
+		}
+	}
+
 	sendPacket(packet) {
-		this.socket.send(this.protocol.states[this.state].serialize(packet));
+		this.socket.send(protocol.states[this.state].serialize(packet));
 	}
 }
 

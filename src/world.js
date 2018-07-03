@@ -6,7 +6,7 @@ const WorldLoader = require("./world_loader");
 
 const IdManager = require("./id_manager");
 
-const { protocol } = require("./main");
+const { States, protocol } = require("./protocol");
 
 class World {
 	constructor(worldName, requestUpdate) {
@@ -20,7 +20,6 @@ class World {
 
 		/* Should a map be used here? Would prevent sending multiple updates for a single pixel */
 		this.pixelUpdates = new ArrayList();
-		this.playerDisconnects = new Set();
 		this.chunks = new Map();
 
 		this.requestUpdate = requestUpdate;
@@ -77,29 +76,37 @@ class World {
 			name: "worldData",
 			params: {
 				worldName: this.name,
-				cursors: Array.from(this.clients, function(key, player) {
+				cursors: Array.from(this.clients, function(entry) {
+					let key = entry[0];
+					let client = entry[1];
 					return {
-						userId: player.userId,
+						userId: client.userId,
 						localId: key,
-						pos: player.pos
+						pos: client.position
 					};
 				})
 			}
 		});
 		//player.send(`Joined world ${this.name}. Your ID: ${client.id}`);
 		let id = this.idManager.newId();
+		client.localId = id;
 		this.clients.set(id, client);
 
 		return id;
 	}
 
-	clientLeave(player) {
-		this.playerDisconnects.add(player.id);
-		this.clients.delete(player.id);
+	clientLeave(client) {
+		this.clients.delete(client.localId);
+		this.broadcast(protocol.states[States.PLAY].serialize({
+			name: "playerLeave",
+			params: {
+				localId: client.localId
+			}
+		}));
 	}
 
 	broadcast(message) {
-		this.clients.forEach((key, player) => player.send(message));
+		this.clients.forEach((key, client) => client.socket.send(message));
 	}
 
 	sendUpdates() {

@@ -44,12 +44,10 @@ class PlayState extends NetworkState {
 	}
 }
 
-class Protocol {
-	constructor() {
-		this.states = {
-			[States.LOGIN]: new LoginState(),
-			[States.PLAY]: new PlayState()
-		};
+const protocol = {
+	states: {
+		[States.LOGIN]: new LoginState(),
+		[States.PLAY]: new PlayState()
 	}
 }
 
@@ -72,5 +70,5 @@ function isWorldNameValid(worldName) {
 
 module.exports = {
 	States: States,
-	Protocol: Protocol
+	protocol: protocol
 };

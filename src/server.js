@@ -7,7 +7,6 @@ const IdManager = require("./id_manager");
 
 require("./auth");
 
-const { Protocol } = require("./protocol");
 const WorldManager = require("./world_manager");
 
 const Client = require("./client");
@@ -16,7 +15,6 @@ class Server {
 	constructor(options) {
 		this.clients = new Set();
 
-		this.protocol = new Protocol();
 		this.worldManager = new WorldManager();
 		this.idManager = new IdManager(); /* Per world or global? */
 
@@ -28,7 +26,7 @@ class Server {
 		});
 
 		this.server.on("connection", (socket, data) => {
-			let client = new Client(socket, this.protocol, this.worldManager);
+			let client = new Client(socket, this.worldManager);
 
 			this.clients.add(client);
 			socket.on("close", () => {
@@ -46,16 +44,10 @@ class Server {
 		const chunksPath = "worlds";
 
 		this.chunkServer = http.createServer(function(req, res) {
-			let url = req.url.split("/");
-			let world = url[1];
-			let zoom = parseInt(url[2]);
-			let x = parseInt(url[3]);
-			let y = parseInt(url[4]);
-
-			let exists = fs.existsSync(chunksPath + "/" + world + "/" + zoom + "/" + x + "." + y + ".png");
+			let exists = fs.existsSync(chunksPath + req.url);
 
 			if (exists) {
-				res.end(fs.readFileSync(chunksPath + "/" + world + "/" + zoom + "/" + x + "." + y + ".png"), "binary");
+				res.end(fs.readFileSync(chunksPath + req.url), "binary");
 			} else {
 				res.writeHead(404, {});
 				res.end();
